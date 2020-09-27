@@ -259,18 +259,48 @@ WHERE id_hunter IN
 		SELECT ticket_num
 		FROM hunters LEFT JOIN hunter_weapon ON hunters.ticket_num = hunter_weapon.id_hunter
 		WHERE id_weapon IS NULL AND vouchers.id_hunter = hunters.ticket_num
-	)
+	);
 	
 --22. Инструкция SELECT, использующая простое обобщённое табличное выражение
---
-WITH FMM(num, )
-AS
+--Вывести полную информацию об охотниках, у которых более 2 путёвок на различных животных.
+WITH hunter_vouchers (hunter, cnt) AS
 (
-	SELECT 
-	FROM
+	SELECT id_hunter, COUNT(distinct animal)
+	FROM vouchers
+	GROUP BY id_hunter
 )
-SELECT AVG(total) AS "max_difference"
-FROM FMM
+SELECT *
+FROM hunter_vouchers HV JOIN hunters H on HV.hunter = H.ticket_num
+WHERE HV.cnt > 2;
+
+--23. Инструкция SELECT, использующая рекурсивное обобщённое табличное выражение
+--
+WITH RECURSIVE REC(id, square, id_husbandry) AS
+(
+	SELECT id, square, id_husbandry
+	FROM sectors
+	WHERE id = 1 OR id = 2
+	
+	UNION
+	
+	SELECT sectors.id, sectors.square, sectors.id_husbandry
+	FROM sectors JOIN REC ON sectors.id_husbandry = REC.id_husbandry	
+)
+SELECT *
+FROM REC;
+
+--24. Оконные функции. Использование конструкций MIN/MAX/AVG OVER()
+--
+SELECT animal,
+	   ground_name,
+	   price,
+	   ROUND(AVG(price) OVER(PARTITION BY animal), 3) AS average_price,
+	   MAX(price) OVER(PARTITION BY animal) AS max_price,
+	   MIN(price) OVER(PARTITION BY animal) AS min_price
+FROM vouchers AS V JOIN sectors AS S ON V.id_sector = S.id 
+			  JOIN hunting_grounds AS HG ON HG.id = S.id_husbandry
+
+
 
 
 
