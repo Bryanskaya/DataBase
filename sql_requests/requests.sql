@@ -123,46 +123,31 @@ GROUP BY animal;
 --12. Инструкция SELECT, использующая вложенные коррелированные подзапросы в качестве производных
 --таблиц в предложении FROM
 --Получение информации о том, кто зарегистрирован в текущих хозяйствах и вывести их статус (охотник/егерь)
---!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-
-SELECT ground_name AS "area", 
-	   person_id, 
-	   surname, 
-	   firstname, 
-	   patronymic, 
-	   date_of_birth, 
-	   sex, 
-	   mobile_phone, 
-	   email, 
-	   'егерь' AS status
+SELECT ground_name AS "area", person_id, 
+	   surname, firstname, 
+	   patronymic, date_of_birth, 
+	   sex, mobile_phone, 
+	   email, 'егерь' AS status
 FROM hunting_grounds JOIN
 	(
-		SELECT huntsmen.id AS "person_id", 
-			   id_husbandry, 
-			   surname, 
-			   firstname, 
-		       patronymic, 
-			   date_of_birth, 
-			   sex, 
-			   mobile_phone, 
+		SELECT huntsmen.id AS "person_id", id_husbandry, 
+			   surname, firstname, 
+		       patronymic, date_of_birth, 
+			   sex, mobile_phone, 
 			   email
-		FROM sectors JOIN huntsmen ON sectors.id = huntsmen.id AND
+		FROM sectors JOIN huntsmen ON sectors.id = huntsmen.id
 	)AS NH ON hunting_grounds.id = NH.id_husbandry
 UNION
-SELECT ground_name AS "area", 
-	   id_hunter AS person_id, 
-	   surname, 
-	   firstname, 
-	   patronymic, 
-	   date_of_birth, 
-	   sex, 
-	   mobile_phone, 
-	   email, 
-	   'охотник' AS status
+SELECT ground_name AS "area", id_hunter AS person_id, 
+	   surname, firstname, 
+	   patronymic, date_of_birth, 
+	   sex, mobile_phone, 
+	   email, 'охотник' AS status
 FROM hunters JOIN
 	(
 		SELECT id_hunter, ground_name
-		FROM vouchers JOIN sectors ON vouchers.id_sector = sectors.id JOIN hunting_grounds ON id_husbandry = hunting_grounds.id
+		FROM vouchers JOIN sectors ON vouchers.id_sector = sectors.id 
+					  JOIN hunting_grounds ON id_husbandry = hunting_grounds.id
 	)AS NT ON hunters.ticket_num = NT.id_hunter
 ORDER BY area;
 
@@ -274,12 +259,12 @@ FROM hunter_vouchers HV JOIN hunters H on HV.hunter = H.ticket_num
 WHERE HV.cnt > 2;
 
 --23. Инструкция SELECT, использующая рекурсивное обобщённое табличное выражение
---
+--Вывести все секторы, принадлежащие тому же хозяйству, что и сектор под номером 2
 WITH RECURSIVE REC(id, square, id_husbandry) AS
 (
 	SELECT id, square, id_husbandry
 	FROM sectors
-	WHERE id = 1 OR id = 2
+	WHERE id = 2
 	
 	UNION
 	
@@ -290,7 +275,8 @@ SELECT *
 FROM REC;
 
 --24. Оконные функции. Использование конструкций MIN/MAX/AVG OVER()
---
+--Получить информацию о ценах на путёвки в каждом хозяйстве, среднюю цену на каждый вид, 
+--максимальную и минимальную стоимость
 SELECT animal,
 	   ground_name,
 	   price,
@@ -299,32 +285,28 @@ SELECT animal,
 	   MIN(price) OVER(PARTITION BY animal) AS min_price
 FROM vouchers AS V JOIN sectors AS S ON V.id_sector = S.id 
 			  JOIN hunting_grounds AS HG ON HG.id = S.id_husbandry
+ORDER BY animal, ground_name
+
+--25. Оконные функции для устранения дублей. Использование функции ROW_NUMBER.
+--Определить какие марки ружей используются
+WITH num_group (id, brand, type_weapon, num_barrels, caliber, cnt) AS
+(
+	SELECT id,
+		   brand,
+		   type_weapon,
+		   num_barrels,
+		   caliber,
+		   ROW_NUMBER() OVER(PARTITION BY brand, type_weapon, num_barrels, caliber) AS cnt
+	FROM weapon
+)
+SELECT id,
+	   brand,
+	   type_weapon,
+	   num_barrels,
+	   caliber
+FROM num_group
+WHERE cnt = 1;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*SELECT id_hunter, surname, firstname, patronymic, mobile_phone, max_price
-FROM hunters H JOIN
-	(
-		SELECT vouchers.id_hunter, MAX(price) AS max_price
-		FROM vouchers
-		GROUP BY vouchers.id_hunter
-	.)AS MV ON MV.id_hunter = H.ticket_num
-ORDER BY max_price DESC*/
 
 	
