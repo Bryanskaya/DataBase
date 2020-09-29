@@ -74,25 +74,25 @@ CREATE TABLE IF NOT EXISTS vouchers(
 
 --ALTER TABLE hunting_grounds RENAME COLUMN name TO ground_name;
 COPY hunting_grounds (ground_name, square, max_num_sectors)
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\grounds.cvg' 	DELIMITER ',';
+FROM 'C:\msys64\home\bryan\DataBase\generating\grounds.cvg' 	DELIMITER ',';
 
 COPY sectors (square, id_husbandry)
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\sectors.cvg' 	DELIMITER ',';
+FROM 'C:\msys64\home\bryan\DataBase\generating\sectors.cvg' 	DELIMITER ',';
 
 COPY huntsmen
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\huntsmen.cvg'	 DELIMITER ',';
+FROM 'C:\msys64\home\bryan\DataBase\generating\huntsmen.cvg'	 DELIMITER ',';
 
 COPY hunters
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\hunters.cvg'	 DELIMITER '|';
+FROM 'C:\msys64\home\bryan\DataBase\generating\hunters.cvg'	 DELIMITER '|';
 
 COPY vouchers (animal, duration_days, amount_animals, price, id_sector, id_hunter)
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\vouchers.cvg'	 DELIMITER ',';
+FROM 'C:\msys64\home\bryan\DataBase\generating\vouchers.cvg'	 DELIMITER ',';
 
 COPY weapon (brand, type_weapon, num_barrels, caliber)
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\weapon.cvg'	 DELIMITER ',';
+FROM 'C:\msys64\home\bryan\DataBase\generating\weapon.cvg'	 DELIMITER ',';
 
 COPY hunter_weapon
-FROM 'C:\msys64\home\bryan\DataBase\lab_01\generating\hunter_weapon.cvg'	 DELIMITER ',';
+FROM 'C:\msys64\home\bryan\DataBase\generating\hunter_weapon.cvg'	 DELIMITER ',';
 
 --SELECT * FROM hunting_grounds;
 --SELECT * FROM sectors;
