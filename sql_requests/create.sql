@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS vouchers(
 );
 
 --ALTER TABLE hunting_grounds RENAME COLUMN name TO ground_name;
+
 COPY hunting_grounds (ground_name, square, max_num_sectors)
 FROM 'C:\msys64\home\bryan\DataBase\generating\grounds.cvg' 	DELIMITER ',';
 

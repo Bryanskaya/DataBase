@@ -89,8 +89,8 @@ WITH Birds (kinds) AS (
 	
 SELECT vouchers.id AS "num of voucher", 
 	   animal,
-	   CASE 
-	   	   WHEN animal IN (SELECT * FROM Birds) THEN 'Разрешена'
+	   CASE animal
+	   	   WHEN 'Гусь' THEN 'Разрешена'
 		   ELSE 'Запрещена'
 	   END AS "status"
 FROM vouchers;
