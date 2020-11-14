@@ -22,10 +22,26 @@ SELECT AvgPrice();
 
 -- 2) Подставляемая табличная функция
 -- Вывести информацию по всем охотникам, у которых есть путёвка на конкретное животное
+DROP TYPE table_vh;
+CREATE TYPE table_vh AS
+(
+	voucher_id 		INTEGER, 
+	surname 		VARCHAR(30), 
+	firstname 		VARCHAR(30), 
+	patronymic 		VARCHAR(30), 
+	ticket_num 		INTEGER, 
+	date_of_birth 	DATE, 
+	license_num_gun VARCHAR(15), 
+	phone 			VARCHAR(30), 
+	email 			VARCHAR(40)
+);
+
 CREATE OR REPLACE FUNCTION ShowHunterByAnimal(animal_type VARCHAR(30))
-RETURNS TABLE(voucher_id INTEGER, surname VARCHAR(30), firstname VARCHAR(30), 
+/*RETURNS TABLE(voucher_id INTEGER, surname VARCHAR(30), firstname VARCHAR(30), 
 			  patronymic VARCHAR(30), ticket_num INTEGER, date_of_birth date, 
-			  license_num_gun VARCHAR(15), phone VARCHAR(30), email VARCHAR(40))
+			  license_num_gun VARCHAR(15), phone VARCHAR(30), email VARCHAR(40)) --//другой абстрактый тип
+*/
+RETURNS SETOF table_vh
 AS $$
 BEGIN
 	RETURN QUERY
@@ -54,10 +70,25 @@ FROM ShowHunterByAnimal('лиса');
 -- Сформировать строку, в которой за охотником (id охотника и сектора подаются в функцию)
 -- закрепляется путёвка на самого популярного животного (продолжительность и разрешенное количество подаются).
 -- Стоимость такой путёвки берётся как средняя среди путёвок на такой вид животного
+DROP TYPE result_vchr;
+CREATE TYPE result_vchr AS
+(
+	added_id 	INTEGER, 
+	animal 		VARCHAR(30), 
+	days 		INTEGER, 
+	amount		INTEGER, 
+	price 		NUMERIC, 
+	id_sct 		INTEGER, 
+	id_hnt 		INTEGER
+);
+
 DROP TABLE temp_table CASCADE;
+
 CREATE OR REPLACE FUNCTION AddVoucher(id_sect INTEGER, id_h INTEGER, d INTEGER, num INTEGER)
-RETURNS TABLE(added_id INTEGER, animal VARCHAR(30), days INTEGER, 
+/*RETURNS TABLE(added_id INTEGER, animal VARCHAR(30), days INTEGER, 
 			  amount INTEGER, price NUMERIC, id_sct INTEGER, id_hnt INTEGER)
+*/
+RETURNS SETOF result_vchr
 AS $$
 DECLARE 
 	temp_id INTEGER;
@@ -120,6 +151,38 @@ FROM AddVoucher(20, 74758791, 2, 1);
 
 -- 4) Рекурсивную функцию или функцию с рекурсивным ОТВ
 -- Вывести все секторы, принадлежащие тому же хозяйству, что и сектор под номером, которое подали на вход функции
+CREATE OR REPLACE FUNCTION FindRelatedSector(sect_id INTEGER, temp_id INT) --//рекурсию сделать
+RETURNS TABLE(sector_id INTEGER, sector_square NUMERIC, id_hsb INTEGER)
+AS $$
+BEGIN
+	IF (temp_id <= (SELECT COUNT(*) FROM sectors)) THEN
+		RETURN QUERY
+			(
+				SELECT sectors.id, sectors.square, sectors.id_husbandry
+				FROM sectors JOIN 
+				(
+					SELECT *
+					FROM sectors
+					WHERE sectors.id = sect_id
+				) AS input_sect
+				ON sectors.id_husbandry = input_sect.id_husbandry
+				WHERE sectors.id = temp_id
+
+				UNION 
+
+				SELECT *
+				FROM FindRelatedSector(sect_id, temp_id + 1)
+		);
+		END IF;
+END;
+$$
+LANGUAGE PLpgSql;
+
+SELECT *
+FROM FindRelatedSector(2, 1);
+--
+
+
 CREATE OR REPLACE FUNCTION FindRelatedSector(t_id INTEGER)
 RETURNS TABLE(sector_id INTEGER, sector_square NUMERIC, id_hsb INTEGER)
 AS $$
@@ -147,6 +210,3 @@ LANGUAGE PLpgSql;
 
 SELECT *
 FROM FindRelatedSector(2);
-
-
-

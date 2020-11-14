@@ -61,7 +61,7 @@ FROM temp_table;
 
 -- 3) Хранимая процедура с курсором
 -- Изменить зарплату у егерей со стажем работы большем или равным ... (коэффициент и стаж подаётся в процедуру)
-DROP TABLE temp_huntsmen;
+DROP TABLE temp_huntsmen;--// в обратную сторону
 
 SELECT *
 INTO TEMP temp_huntsmen
@@ -70,7 +70,7 @@ ORDER BY id;
 
 CREATE OR REPLACE PROCEDURE ChangeHuntsmenSalary(num NUMERIC, expr INTEGER)
 AS $$
-DECLARE myCursor CURSOR
+DECLARE myCursor SCROLL CURSOR
 	FOR
 		SELECT *
 		FROM temp_huntsmen
@@ -86,12 +86,22 @@ BEGIN
 		SET salary = salary * num
 		WHERE temp_huntsmen.id = param.id;
 	END LOOP;
+	
+	LOOP
+		FETCH PRIOR FROM myCursor INTO param;
+		EXIT WHEN NOT FOUND;
+		
+		UPDATE temp_huntsmen
+		SET salary = salary * num
+		WHERE temp_huntsmen.id = param.id;
+	END LOOP;
+	
 	CLOSE myCursor;
 END
 $$
 LANGUAGE PLpgSql;
 
-CALL ChangeHuntsmenSalary(1.05, 30);
+CALL ChangeHuntsmenSalary(2, 30);
 
 SELECT *
 FROM temp_huntsmen
