@@ -69,9 +69,11 @@ SELECT * FROM ShowGrounds(1000, 3000);
 -- Добавить хозяйство в таблицу хозяйств (название, площадь, максимальное количество секторов подаются)
 CREATE OR REPLACE PROCEDURE AddHuntingGround(gr_name VARCHAR(30), s NUMERIC, max_num_s INTEGER)
 AS $$
-  temp_t = plpy.prepare("INSERT INTO hunting_grounds(ground_name, square, max_num_sectors) VALUES ($1, $2, $3);", ["VARCHAR(30)", "NUMERIC", "INTEGER"])
+  temp_t = plpy.prepare("INSERT INTO hunting_grounds(ground_name, square, max_num_sectors) \
+						 VALUES ($1, $2, $3);", \
+						 ["VARCHAR(30)", "NUMERIC", "INTEGER"])
   plpy.execute(temp_t, [gr_name, s, max_num_s])
-  plpy.notice('Запись добавлена')
+  plpy.info('Запись добавлена')
 $$ LANGUAGE plpython3u;
 
 CALL AddHuntingGround('Test_ground', 5000, 10);
@@ -85,7 +87,7 @@ FROM hunting_grounds
 DROP TABLE try_delete CASCADE;
 CREATE TABLE IF NOT EXISTS try_delete
 (
-	data_time TIMESTAMP NOT NULL,
+	data_time   TIMESTAMP NOT NULL,
 	id_voucher	INTEGER,
 	price 		NUMERIC,
 	id_sector	INTEGER,
@@ -105,9 +107,15 @@ CREATE OR REPLACE FUNCTION proc_trigger_instead_of()
 RETURNS TRIGGER
 AS $$
   from datetime import datetime
-  temp_t = plpy.prepare("INSERT INTO try_delete(data_time, id_voucher, price, id_sector, id_hunter) VALUES ($1, $2, $3, $4, $5);", ["TIMESTAMP", "INTEGER", "NUMERIC", "INTEGER", "INTEGER"])
+  temp_t = plpy.prepare("INSERT INTO try_delete(data_time, id_voucher, price, id_sector, id_hunter) \
+						 VALUES ($1, $2, $3, $4, $5);", \
+						 ["TIMESTAMP", "INTEGER", "NUMERIC", "INTEGER", "INTEGER"])
   temp_data = TD['old']
-  plpy.execute(temp_t, [datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp_data["id"], temp_data["price"], temp_data["id_sector"], temp_data["id_hunter"]])
+  plpy.execute(temp_t, [datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+						temp_data["id"], 
+						temp_data["price"], 
+						temp_data["id_sector"], 
+						temp_data["id_hunter"]])
   plpy.warning('УДАЛЕНИЕ в таблице vouchers_view ЗАПРЕЩЕНО')
   
   return TD['new']
@@ -128,4 +136,47 @@ SELECT *
 FROM try_delete
 
 -- 6) Определяемый пользователем тип данных CLR
--- 
+-- Вывести информацию по всем охотникам, у которых есть путёвка на конкретное животное
+DROP TYPE result_hunters CASCADE;
+CREATE TYPE result_hunters AS
+(
+	ticket_num 		INTEGER, 
+	surname 		VARCHAR(30), 
+	firstname		VARCHAR(30),
+	patronymic		VARCHAR(30),
+	mobile_phone 	VARCHAR(30),
+	email 			VARCHAR(40),
+	id_voucher 		INTEGER,
+	id_sector		INTEGER
+);
+
+CREATE OR REPLACE FUNCTION ShowHuntersByAnimal(kind VARCHAR(30))
+RETURNS SETOF result_hunters
+AS $$
+  temp_res = []
+  
+  for hunter in plpy.execute("SELECT hunters.ticket_num, \
+							         hunters.surname, \
+							 		 hunters.firstname, \
+							 		 hunters.patronymic, \
+							 		 hunters.mobile_phone, \
+							 		 hunters.email, \
+							 		 vouchers.id AS id_voucher, \
+							 		 vouchers.animal, \
+							 		 vouchers.id_sector \
+							 FROM vouchers JOIN hunters ON vouchers.id_hunter = hunters.ticket_num"):
+    if hunter["animal"] == kind:
+      temp_res.append((hunter["ticket_num"], 
+					   hunter["surname"], 
+					   hunter["firstname"], 
+					   hunter["patronymic"], 
+					   hunter["mobile_phone"], 
+					   hunter["email"], 
+					   hunter["id_voucher"], 
+					   hunter["id_sector"]))
+  
+  return temp_res
+$$ LANGUAGE plpython3u;
+
+SELECT * FROM ShowHuntersByAnimal('лиса');
+
