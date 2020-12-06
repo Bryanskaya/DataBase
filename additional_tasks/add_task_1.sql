@@ -26,8 +26,8 @@ INSERT INTO Table1(id, var1, valid_from_dttm, valid_to_dttm) VALUES (2, 'AA', '2
 INSERT INTO Table1(id, var1, valid_from_dttm, valid_to_dttm) VALUES (2, 'BB', '2018-10-15', '5999-12-31');
 
 
-INSERT INTO Table2(id, var2, valid_from_dttm, valid_to_dttm) VALUES (1, 'A', '2018-09-01', '2018-09-18');
-INSERT INTO Table2(id, var2, valid_from_dttm, valid_to_dttm) VALUES (1, 'B', '2018-09-19', '2018-09-21');
+INSERT INTO Table2(id, var2, valid_from_dttm, valid_to_dttm) VALUES (1, 'A', '2018-09-01', '2018-09-14');
+INSERT INTO Table2(id, var2, valid_from_dttm, valid_to_dttm) VALUES (1, 'B', '2018-09-15', '2018-09-21');
 INSERT INTO Table2(id, var2, valid_from_dttm, valid_to_dttm) VALUES (1, 'C', '2018-09-22', '2018-09-30');
 INSERT INTO Table2(id, var2, valid_from_dttm, valid_to_dttm) VALUES (1, 'D', '2018-10-01', '5999-12-31');
 
