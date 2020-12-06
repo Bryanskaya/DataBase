@@ -28,16 +28,28 @@ def print_menu():
     print(" 0 Выход\n")
 
 class DataBase:
+    connection = None
+    cursor = None
+
     def __init__(self, pwd):
         try:
             self.connection = psycopg2.connect(dbname='hunting_grounds', user = 'postgres', password=pwd, host='localhost')
             self.cursor = self.connection.cursor()
         except:
             print("ОШИБКА: соединения")
+            connection = None
+            cursor = None
 
     def __del__(self):
-        self.connection.close()
-        self.cursor.close()
+        if self.connection != None:
+            self.connection.close()
+        if self.cursor != None:
+            self.cursor.close()
+
+    def is_close(self):
+        if self.connection == None or self.cursor == None:
+            return True
+        return False
 
     def get_result(self):
         res = self.cursor.fetchall()
@@ -118,7 +130,8 @@ class DataBase:
 def menu():
     pwd = getpass.getpass("Введите пароль для работы с базой данных: ")
     my_db = DataBase(pwd)
-    print(my_db)
+    if my_db.is_close():
+        return
 
     while True:
         print_menu()
