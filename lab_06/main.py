@@ -37,8 +37,8 @@ class DataBase:
             self.cursor = self.connection.cursor()
         except:
             print("ОШИБКА: соединения")
-            connection = None
-            cursor = None
+            self.connection = None
+            self.cursor = None
 
     def __del__(self):
         if self.connection != None:
@@ -89,10 +89,10 @@ class DataBase:
                             "WHERE table_schema not in ('information_schema','pg_catalog')")
 
     def get_avg_price_vouchers(self):
-        self.cursor.callproc("AvgPrice")
+        self.cursor.execute("SELECT AvgPrice()")
 
     def get_hunter_by_animal(self, kind):
-        self.cursor.callproc("ShowHunterByAnimal", [kind])
+        self.cursor.execute("SELECT * FROM ShowHunterByAnimal('%s')" %kind)
 
     def insert_hunting_ground(self, name, s, max_num):
         try:
