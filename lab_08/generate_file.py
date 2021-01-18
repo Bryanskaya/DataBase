@@ -53,8 +53,8 @@ def create_file():
         f.close()
 
         id_file += 1
-        #time.sleep(10)
-        time.sleep(NUM_MINUTES * 60)
+        time.sleep(30)
+        #time.sleep(NUM_MINUTES * 60)
 
 
 
